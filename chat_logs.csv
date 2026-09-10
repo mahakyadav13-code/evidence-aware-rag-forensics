@@ -1,0 +1,6 @@
+sender,receiver,timestamp,message
+Alice,Bob,2024-01-05 10:15:00,Meet at the warehouse tonight
+Bob,Alice,2024-01-05 10:16:30,Confirmed bringing the package
+Alice,Carol,2024-01-05 11:00:00,Did you delete the files?
+Carol,Alice,2024-01-05 11:02:15,Yes all clear
+Bob,Carol,2024-01-06 09:30:00,Need the location again
