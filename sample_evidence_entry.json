@@ -1,0 +1,9 @@
+{
+  "evidence_id": "EVID-0001",
+  "source_type": "call_log",
+  "timestamp": "2026-03-05T22:30:00",
+  "entity_refs": ["PERSON-John", "PERSON-Mike"],
+  "content": "John called Mike, call lasted 14 minutes.",
+  "confidence": 0.95,
+  "raw_source_file": "synthetic_case_v0/call_logs.csv"
+}

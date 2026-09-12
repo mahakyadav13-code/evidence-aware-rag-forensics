@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Evidence Item Schema",
+  "type": "object",
+  "required": ["evidence_id", "source_type", "timestamp", "entity_refs", "content", "confidence"],
+  "properties": {
+    "evidence_id": {
+      "type": "string",
+      "description": "Unique identifier, e.g. EVID-0001"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": ["chat_log", "call_log", "file_metadata", "network_log", "location_ping"],
+      "description": "Type of evidence artifact"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Normalized ISO 8601 timestamp"
+    },
+    "entity_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Normalized IDs of people/devices/IPs involved, e.g. ['PERSON-01', 'DEVICE-03']"
+    },
+    "content": {
+      "type": "string",
+      "description": "Raw evidence text/description"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Source reliability score (used in evidence-aware scoring, Week 9)"
+    },
+    "raw_source_file": {
+      "type": "string",
+      "description": "Path/reference to original raw file for chain-of-custody traceability"
+    }
+  }
+}
