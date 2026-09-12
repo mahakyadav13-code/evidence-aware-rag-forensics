@@ -1,0 +1,47 @@
+[
+  {
+    "evidence_id": "EVID-0001",
+    "source_type": "call_log",
+    "timestamp": "2026-03-05T22:30:00",
+    "entity_refs": ["PERSON-John", "PERSON-Mike"],
+    "content": "John called Mike. Call lasted 14 minutes.",
+    "confidence": 0.95,
+    "raw_source_file": "synthetic_case_v0/raw/call_logs.csv"
+  },
+  {
+    "evidence_id": "EVID-0002",
+    "source_type": "file_metadata",
+    "timestamp": "2026-03-05T22:52:00",
+    "entity_refs": ["PERSON-John", "DEVICE-JohnLaptop"],
+    "content": "File 'transfer.zip' created on John's laptop.",
+    "confidence": 0.9,
+    "raw_source_file": "synthetic_case_v0/raw/file_metadata.csv"
+  },
+  {
+    "evidence_id": "EVID-0003",
+    "source_type": "network_log",
+    "timestamp": "2026-03-05T23:05:00",
+    "entity_refs": ["PERSON-John", "IP-192.168.1.5"],
+    "content": "IP address 192.168.1.5 uploaded 'transfer.zip' to an external server.",
+    "confidence": 0.85,
+    "raw_source_file": "synthetic_case_v0/raw/network_logs.csv"
+  },
+  {
+    "evidence_id": "EVID-0004",
+    "source_type": "chat_log",
+    "timestamp": "2026-03-05T22:35:00",
+    "entity_refs": ["PERSON-Mike", "PERSON-John"],
+    "content": "Mike sent a message to John: 'meet me at the warehouse'.",
+    "confidence": 0.9,
+    "raw_source_file": "synthetic_case_v0/raw/chat_logs.csv"
+  },
+  {
+    "evidence_id": "EVID-0005",
+    "source_type": "location_ping",
+    "timestamp": "2026-03-05T23:15:00",
+    "entity_refs": ["PERSON-Mike", "DEVICE-MikePhone"],
+    "content": "Mike's phone pinged near the old warehouse.",
+    "confidence": 0.8,
+    "raw_source_file": "synthetic_case_v0/raw/location_pings.csv"
+  }
+]
