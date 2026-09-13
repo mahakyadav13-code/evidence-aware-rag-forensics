@@ -9,14 +9,16 @@ def build_vector_store(evidence_file, collection_name="case_evidence"):
         evidence_list = json.load(f)
     
     client = chromadb.Client()
+    try:
+        client.delete_collection(collection_name)
+    except Exception:
+        pass
     collection = client.create_collection(collection_name)
     
     contents = [item["content"] for item in evidence_list]
     embeddings = model.encode(contents).tolist()
     ids = [item["evidence_id"] for item in evidence_list]
-    metadatas = [{"source_type": item["source_type"], 
-                  "timestamp": item["timestamp"],
-                  "confidence": item["confidence"]} for item in evidence_list]
+    metadatas = [{"source_type": item["source_type"], "timestamp": item["timestamp"], "confidence": item["confidence"]} for item in evidence_list]
     
     collection.add(
         embeddings=embeddings,
@@ -41,11 +43,6 @@ if __name__ == "__main__":
     test_query = "Who went to the warehouse?"
     results = query_evidence(collection, model, test_query)
     
-    print(f"Query: {test_query}\n")
-    for i, (doc, meta, dist) in enumerate(zip(
-        results['documents'][0], 
-        results['metadatas'][0], 
-        results['distances'][0]
-    )):
+    print(f"Query: {test_query}")
+    for i, (doc, meta, dist) in enumerate(zip(results['documents'][0], results['metadatas'][0], results['distances'][0])):
         print(f"{i+1}. [{meta['source_type']}] {doc} (distance: {dist:.3f})")
-        
