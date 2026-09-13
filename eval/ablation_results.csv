@@ -1,0 +1,4 @@
+config,evidence_covered,total,pct
+full_hybrid,5,5,100.0
+no_graph_expansion,3,5,60.0
+no_evidence_scoring,4,5,80.0
