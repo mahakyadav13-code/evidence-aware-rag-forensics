@@ -1,0 +1,38 @@
+[
+  {
+    "evidence_id": "EVID-C2-0001",
+    "source_type": "chat_log",
+    "timestamp": "2026-04-10T09:00:00",
+    "entity_refs": ["PERSON-Sara", "PERSON-Tom"],
+    "content": "Sara messaged Tom: 'Can you send me the client database export?'",
+    "confidence": 0.9,
+    "raw_source_file": "synthetic_case_v1/raw/chat_logs.csv"
+  },
+  {
+    "evidence_id": "EVID-C2-0002",
+    "source_type": "file_metadata",
+    "timestamp": "2026-04-10T09:15:00",
+    "entity_refs": ["PERSON-Tom", "DEVICE-TomDesktop"],
+    "content": "File 'client_export.csv' created on Tom's desktop.",
+    "confidence": 0.9,
+    "raw_source_file": "synthetic_case_v1/raw/file_metadata.csv"
+  },
+  {
+    "evidence_id": "EVID-C2-0003",
+    "source_type": "network_log",
+    "timestamp": "2026-04-10T09:20:00",
+    "entity_refs": ["PERSON-Tom", "IP-10.0.0.7"],
+    "content": "Email sent from IP 10.0.0.7 with attachment 'client_export.csv' to an external address.",
+    "confidence": 0.85,
+    "raw_source_file": "synthetic_case_v1/raw/network_logs.csv"
+  },
+  {
+    "evidence_id": "EVID-C2-0004",
+    "source_type": "call_log",
+    "timestamp": "2026-04-10T09:30:00",
+    "entity_refs": ["PERSON-Sara", "PERSON-Tom"],
+    "content": "Sara called Tom. Call lasted 3 minutes.",
+    "confidence": 0.95,
+    "raw_source_file": "synthetic_case_v1/raw/call_logs.csv"
+  }
+]
