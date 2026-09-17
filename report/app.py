@@ -7,24 +7,54 @@ from generator.report_gen import generate_report
 from generator.citation_check import extract_citations, get_valid_evidence_ids
 from correlation.timeline import build_timeline
 
-st.set_page_config(page_title="Evidence-Aware RAG for Cybercrime Investigation", layout="wide", page_icon="🕵️")
+st.set_page_config(page_title="Evidence-Aware RAG for Cybercrime Investigation", layout="wide", page_icon="🔎")
 
-# ---- Custom styling ----
 st.markdown("""
 <style>
-.main-header {font-size: 2.2rem; font-weight: 700; color: #1a2b4c; margin-bottom: 0;}
-.sub-header {color: #6b7280; font-size: 1.05rem; margin-top: 0;}
-.metric-box {background: #F2F5FA; padding: 1rem; border-radius: 10px; border: 1px solid #B9C2D0;}
-.evid-badge {background: #E8EEF9; color: #1a2b4c; padding: 2px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; margin-right: 4px;}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+
+.hero {
+    background: linear-gradient(135deg, #1a2b4c 0%, #2E4A7A 60%, #B4650A 130%);
+    padding: 2.2rem 2.5rem; border-radius: 16px; margin-bottom: 1.5rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+.hero h1 { color: #ffffff; font-size: 2rem; font-weight: 800; margin: 0; }
+.hero p { color: #cdd8ec; font-size: 1.05rem; margin: .4rem 0 0 0; }
+
+.card {
+    background: #171B26; border: 1px solid #2A3148; border-radius: 14px;
+    padding: 1.3rem 1.4rem; height: 100%;
+}
+.card h4 { color: #7FA8F5; margin: 0 0 .4rem 0; font-size: 1.0rem; }
+.card p { color: #A8B3C7; margin: 0; font-size: .92rem; }
+
+.badge { display:inline-block; background:#2E4A7A; color:#DCE6FA; padding: 3px 10px;
+    border-radius: 20px; font-size: .78rem; font-weight: 600; margin-right:6px; }
+
+.metric-card { background:#171B26; border:1px solid #2A3148; border-radius:12px;
+    padding: 1rem 1.2rem; text-align:center; }
+.metric-card .val { font-size: 1.9rem; font-weight:800; color:#ffffff; }
+.metric-card .lbl { font-size: .82rem; color:#8A94AB; text-transform:uppercase; letter-spacing:.05em; }
+
+section[data-testid="stSidebar"] { background: #10141F; border-right: 1px solid #232838; }
+div.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #B4650A, #D97C1A); border: none; font-weight: 700;
+    border-radius: 10px; padding: .6rem 1rem;
+}
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="main-header">🕵️ Evidence-Aware Investigation Assistant</p>', unsafe_allow_html=True)
-st.markdown('<p class="sub-header">Upload case evidence and generate a cited, traceable investigator report.</p>', unsafe_allow_html=True)
-st.divider()
+# ---- Hero header ----
+st.markdown("""
+<div class="hero">
+  <h1>Evidence-Aware Investigation Assistant</h1>
+  <p>Upload case evidence and generate a fully cited, traceable investigator report.</p>
+</div>
+""", unsafe_allow_html=True)
 
-# ---- Sidebar: Case Data ----
-st.sidebar.header("📁 Case Data")
+# ---- Sidebar ----
+st.sidebar.markdown("### 📁 Case Data")
 default_path = "synthetic_case_v0/evidence.json"
 uploaded_file = st.sidebar.file_uploader("Upload evidence JSON (or use default)", type="json")
 
@@ -45,7 +75,6 @@ if uploaded_file:
 else:
     st.sidebar.info(f"Using synthetic case:\n`{default_path}`")
 
-# ---- Sidebar: Timeline preview ----
 with st.sidebar.expander("🕐 Preview Timeline", expanded=False):
     try:
         timeline = build_timeline(evidence_file)
@@ -56,31 +85,29 @@ with st.sidebar.expander("🕐 Preview Timeline", expanded=False):
     except Exception as e:
         st.error(f"Could not load timeline: {e}")
 
-st.sidebar.divider()
-run_clicked = st.sidebar.button("▶️ Run Pipeline: Generate Report", type="primary", use_container_width=True)
+st.sidebar.markdown("---")
+run_clicked = st.sidebar.button("▶  Run Pipeline: Generate Report", type="primary", use_container_width=True)
 
 # ---- Main area ----
 if run_clicked:
     try:
         with st.spinner("Retrieving evidence, correlating, and generating report..."):
             report = generate_report(evidence_file)
-        st.success("Report generated successfully!")
 
         cited = extract_citations(report)
         valid = get_valid_evidence_ids(evidence_file)
         invalid = cited - valid
         unused = valid - cited
 
-        # Top metric row
         col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Citations Used", len(cited))
-        with col2:
-            st.metric("Invalid Citations", len(invalid), delta_color="inverse")
-        with col3:
-            st.metric("Uncited Evidence", len(unused))
+        for col, val, lbl in [(col1, len(cited), "Citations Used"),
+                               (col2, len(invalid), "Invalid Citations"),
+                               (col3, len(unused), "Uncited Evidence")]:
+            with col:
+                st.markdown(f'<div class="metric-card"><div class="val">{val}</div><div class="lbl">{lbl}</div></div>', unsafe_allow_html=True)
 
-        tab1, tab2 = st.tabs(["📄 Report", "🔍 Citation Verification"])
+        st.markdown("")
+        tab1, tab2 = st.tabs(["📄  Report", "🔍  Citation Verification"])
         with tab1:
             st.markdown(report)
         with tab2:
@@ -99,12 +126,15 @@ if run_clicked:
         st.error(f"Pipeline failed: {e}")
         st.info("This could be due to an API issue (rate limit, connectivity) or malformed evidence data. Please try again.")
 else:
-    st.info("👈 Click **Run Pipeline** in the sidebar to generate an investigator report.")
-    st.markdown("### How it works")
+    st.markdown("#### How it works")
     c1, c2, c3 = st.columns(3)
-    with c1:
-        st.markdown("**1. Ingest & Correlate**\n\nEvidence is normalized and linked in a knowledge graph.")
-    with c2:
-        st.markdown("**2. Evidence-Aware Retrieval**\n\nRanked by relevance, reliability, and corroboration.")
-    with c3:
-        st.markdown("**3. Cited Generation**\n\nEvery claim traces back to a specific evidence ID.")
+    cards = [
+        ("🧩 Ingest & Correlate", "Evidence is normalized and linked into a knowledge graph across sources."),
+        ("🎯 Evidence-Aware Retrieval", "Ranked by relevance, source reliability, and cross-source corroboration."),
+        ("📌 Cited Generation", "Every claim in the final report traces back to a specific evidence ID."),
+    ]
+    for col, (title, desc) in zip([c1, c2, c3], cards):
+        with col:
+            st.markdown(f'<div class="card"><h4>{title}</h4><p>{desc}</p></div>', unsafe_allow_html=True)
+    st.markdown("")
+    st.info("👈  Click **Run Pipeline** in the sidebar to generate an investigator report.")
