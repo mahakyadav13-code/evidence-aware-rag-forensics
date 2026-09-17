@@ -46,8 +46,6 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 .badge { display:inline-block; background:#1D2A44; color:#9FC0FF; border:1px solid #2E4A7A; 
     padding: 3px 10px; border-radius: 20px; font-size: .76rem; font-family:'JetBrains Mono',monospace; margin:2px; }
 
-footer-note { color:#5B6478; font-size:.8rem; }
-
 section[data-testid="stSidebar"] { background: #0D111A; border-right: 1px solid #1E2334; }
 div.stButton > button[kind="primary"] {
     background: linear-gradient(135deg, #D97C1A, #B4650A); border: none; font-weight: 700;
@@ -83,24 +81,55 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# ---- Sidebar ----
+# ---- Sidebar: Case Data ----
 st.sidebar.markdown("### 📁 Case Data")
-uploaded_file = st.sidebar.file_uploader("Upload evidence JSON (or use default)", type="json")
+input_mode = st.sidebar.radio("Choose input method", ["Use default case", "Upload evidence JSON", "Paste case description"])
 
 evidence_file = default_path
-if uploaded_file:
-    try:
-        evidence_data = json.load(uploaded_file)
-        if not isinstance(evidence_data, list) or len(evidence_data) == 0:
-            st.sidebar.error("Uploaded file must be a non-empty JSON list of evidence items.")
+
+if input_mode == "Upload evidence JSON":
+    uploaded_file = st.sidebar.file_uploader("Upload evidence JSON", type="json")
+    if uploaded_file:
+        try:
+            evidence_data = json.load(uploaded_file)
+            if not isinstance(evidence_data, list) or len(evidence_data) == 0:
+                st.sidebar.error("Uploaded file must be a non-empty JSON list of evidence items.")
+            else:
+                evidence_file = "temp_uploaded_evidence.json"
+                with open(evidence_file, "w") as f:
+                    json.dump(evidence_data, f)
+                st.sidebar.success(f"✅ Using: {uploaded_file.name}")
+        except json.JSONDecodeError:
+            st.sidebar.error("Uploaded file is not valid JSON.")
+
+elif input_mode == "Paste case description":
+    case_text = st.sidebar.text_area(
+        "Paste the case notes / description",
+        placeholder="e.g. John called Mike at 10:30 PM on March 5th. Mike messaged him to meet at the warehouse. A file called transfer.zip was created on John's laptop shortly after...",
+        height=180
+    )
+    if st.sidebar.button("🔄 Convert to Evidence Format"):
+        if not case_text.strip():
+            st.sidebar.error("Please paste some case text first.")
         else:
-            evidence_file = "temp_uploaded_evidence.json"
-            with open(evidence_file, "w") as f:
-                json.dump(evidence_data, f)
-            st.sidebar.success(f"✅ Using: {uploaded_file.name}")
-    except json.JSONDecodeError:
-        st.sidebar.error("Uploaded file is not valid JSON. Using default case instead.")
-        evidence_file = default_path
+            with st.sidebar:
+                with st.spinner("Extracting structured evidence..."):
+                    try:
+                        from ingestion.text_to_evidence import convert_text_to_evidence
+                        evidence_data = convert_text_to_evidence(case_text)
+                        conv_file = "temp_converted_evidence.json"
+                        with open(conv_file, "w") as f:
+                            json.dump(evidence_data, f, indent=2)
+                        st.session_state["converted_evidence_file"] = conv_file
+                        st.success(f"✅ Extracted {len(evidence_data)} evidence items")
+                        with st.expander("Preview extracted evidence"):
+                            st.json(evidence_data)
+                    except Exception as e:
+                        st.error(f"Conversion failed: {e}")
+
+    if "converted_evidence_file" in st.session_state:
+        evidence_file = st.session_state["converted_evidence_file"]
+
 else:
     st.sidebar.info(f"Using synthetic case:\n`{default_path}`")
 
