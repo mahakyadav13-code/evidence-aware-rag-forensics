@@ -46,6 +46,8 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 .badge { display:inline-block; background:#1D2A44; color:#9FC0FF; border:1px solid #2E4A7A; 
     padding: 3px 10px; border-radius: 20px; font-size: .76rem; font-family:'JetBrains Mono',monospace; margin:2px; }
 
+.conf-card { background:#141925; border:1px solid #232A3D; border-radius:12px; padding:1rem 1.2rem; }
+
 section[data-testid="stSidebar"] { background: #0D111A; border-right: 1px solid #1E2334; }
 div.stButton > button[kind="primary"] {
     background: linear-gradient(135deg, #D97C1A, #B4650A); border: none; font-weight: 700;
@@ -105,7 +107,7 @@ if input_mode == "Upload evidence JSON":
 elif input_mode == "Paste case description":
     case_text = st.sidebar.text_area(
         "Paste the case notes / description",
-        placeholder="e.g. John called Mike at 10:30 PM on March 5th. Mike messaged him to meet at the warehouse. A file called transfer.zip was created on John's laptop shortly after...",
+        placeholder="e.g. John called Mike at 10:30 PM on March 5th. Mike messaged him to meet at the warehouse...",
         height=180
     )
     if st.sidebar.button("🔄 Convert to Evidence Format"):
@@ -166,12 +168,33 @@ if run_clicked:
                 st.markdown(f'<div class="metric-card"><div class="val">{val}</div><div class="lbl">{lbl}</div></div>', unsafe_allow_html=True)
 
         st.markdown("")
-        tab1, tab2 = st.tabs(["📄  Report", "🔍  Citation Verification"])
+        tab1, tab2, tab3 = st.tabs(["📄  Report", "🔍  Citation Verification", "🔬  Retrieval Explainability"])
+
         with tab1:
             st.markdown(report)
             if cited:
                 badges = " ".join([f'<span class="badge">{c}</span>' for c in sorted(cited)])
                 st.markdown(f"**Cited evidence:** {badges}", unsafe_allow_html=True)
+
+            try:
+                from retriever.confidence_calc import compute_confidence
+                all_ev = json.load(open(evidence_file))
+                cited_full_items = [e for e in all_ev if e["evidence_id"] in cited]
+                conf = compute_confidence(cited_full_items, all_ev)
+                st.markdown("#### 📊 Computed Confidence")
+                st.markdown(f"""
+                <div class="conf-card">
+                <b>Score:</b> {conf['score']} &nbsp; | &nbsp; <b>Label:</b> {conf['label']}<br>
+                <span style="color:#8A94AB; font-size:.85rem;">
+                Reliability: {conf['details'].get('avg_reliability','—')} · 
+                Corroboration: {conf['details'].get('avg_corroboration','—')} · 
+                Temporal Consistency: {conf['details'].get('temporal_consistency','—')}
+                </span>
+                </div>
+                """, unsafe_allow_html=True)
+            except Exception as e:
+                st.info(f"Confidence calibration unavailable: {e}")
+
         with tab2:
             if invalid:
                 st.error(f"⚠️ Invalid citations found: {', '.join(invalid)}")
@@ -181,6 +204,28 @@ if run_clicked:
                 st.warning(f"Evidence not cited in report: {', '.join(unused)}")
             else:
                 st.info("All available evidence was referenced in the report.")
+
+        with tab3:
+            try:
+                from retriever.explain_retrieval import explain_retrieval
+                from kg.kg_builder_from_extraction import build_kg
+                all_ev = json.load(open(evidence_file))
+                cited_full_items = [e for e in all_ev if e["evidence_id"] in cited]
+                G = build_kg("ingestion/extracted_entities.json")
+                query_entities = set()
+                breakdown = explain_retrieval(query_entities, cited_full_items, all_ev, all_ev[0]["timestamp"], G)
+                st.caption("Why each citation was retrieved, broken down by signal:")
+                for b in breakdown:
+                    st.markdown(f"**{b['evidence_id']}** — final score `{b['final_score']}`")
+                    c1, c2, c3, c4 = st.columns(4)
+                    c1.metric("Recency", b["recency"])
+                    c2.metric("Reliability", b["reliability"])
+                    c3.metric("Corroboration", b["corroboration"])
+                    c4.metric("Graph Proximity", b["graph_proximity"])
+                    st.caption(b["content"])
+                    st.markdown("---")
+            except Exception as e:
+                st.info(f"Breakdown unavailable: {e}")
 
     except FileNotFoundError:
         st.error("Evidence file not found. Please check the file path or upload a valid file.")
