@@ -159,6 +159,8 @@ if run_clicked:
         valid = get_valid_evidence_ids(evidence_file)
         invalid = cited - valid
         unused = valid - cited
+        all_ev = json.load(open(evidence_file))
+        cited_full_items = [e for e in all_ev if e["evidence_id"] in cited]
 
         col1, col2, col3 = st.columns(3)
         for col, val, lbl in [(col1, len(cited), "Citations Used"),
@@ -168,7 +170,7 @@ if run_clicked:
                 st.markdown(f'<div class="metric-card"><div class="val">{val}</div><div class="lbl">{lbl}</div></div>', unsafe_allow_html=True)
 
         st.markdown("")
-        tab1, tab2, tab3 = st.tabs(["📄  Report", "🔍  Citation Verification", "🔬  Retrieval Explainability"])
+        tab1, tab2, tab3, tab4 = st.tabs(["📄  Report", "🔍  Citation Verification", "🔬  Retrieval Explainability", "⚠️  Contradiction Check"])
 
         with tab1:
             st.markdown(report)
@@ -178,8 +180,6 @@ if run_clicked:
 
             try:
                 from retriever.confidence_calc import compute_confidence
-                all_ev = json.load(open(evidence_file))
-                cited_full_items = [e for e in all_ev if e["evidence_id"] in cited]
                 conf = compute_confidence(cited_full_items, all_ev)
                 st.markdown("#### 📊 Computed Confidence")
                 st.markdown(f"""
@@ -209,8 +209,6 @@ if run_clicked:
             try:
                 from retriever.explain_retrieval import explain_retrieval
                 from kg.kg_builder_from_extraction import build_kg
-                all_ev = json.load(open(evidence_file))
-                cited_full_items = [e for e in all_ev if e["evidence_id"] in cited]
                 G = build_kg("ingestion/extracted_entities.json")
                 query_entities = set()
                 breakdown = explain_retrieval(query_entities, cited_full_items, all_ev, all_ev[0]["timestamp"], G)
@@ -226,6 +224,22 @@ if run_clicked:
                     st.markdown("---")
             except Exception as e:
                 st.info(f"Breakdown unavailable: {e}")
+
+        with tab4:
+            try:
+                from retriever.contradiction_detector import detect_all_contradictions
+                contradictions = detect_all_contradictions(all_ev)
+                total_flags = sum(len(v) for v in contradictions.values())
+                st.markdown("#### ⚠️ Contradiction Check (across full case, not just citations)")
+                if total_flags == 0:
+                    st.success("No contradictions detected across evidence sources.")
+                else:
+                    st.error(f"{total_flags} potential contradiction(s) found:")
+                    for category, items in contradictions.items():
+                        for c in items:
+                            st.warning(f"**{category}** — {', '.join(c['evidence_ids'])}: {c['detail']}")
+            except Exception as e:
+                st.info(f"Contradiction check unavailable: {e}")
 
     except FileNotFoundError:
         st.error("Evidence file not found. Please check the file path or upload a valid file.")
