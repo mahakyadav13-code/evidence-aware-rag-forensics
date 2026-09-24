@@ -1,0 +1,7 @@
+[
+  {"evidence_id":"EVID-E001","source_type":"call_log","timestamp":"2026-06-02T09:00:00","entity_refs":["PERSON-Tariq","PERSON-Wei"],"content":"Tariq called Wei, call lasted 8 minutes.","confidence":0.9,"raw_source_file":"synthetic_case_v4/raw/call1.csv"},
+  {"evidence_id":"EVID-E002","source_type":"location_ping","timestamp":"2026-06-02T09:30:00","entity_refs":["PERSON-Wei","DEVICE-WeiPhone"],"content":"Wei's phone pinged near the shipping dock.","confidence":0.8,"raw_source_file":"synthetic_case_v4/raw/loc1.csv"},
+  {"evidence_id":"EVID-E003","source_type":"file_metadata","timestamp":"2026-06-02T09:45:00","entity_refs":["PERSON-Tariq","DEVICE-TariqLaptop"],"content":"File 'manifest_edit.doc' modified on Tariq's laptop.","confidence":0.85,"raw_source_file":"synthetic_case_v4/raw/file1.csv"},
+  {"evidence_id":"EVID-E004","source_type":"network_log","timestamp":"2026-06-02T10:00:00","entity_refs":["PERSON-Tariq","IP-172.16.0.9"],"content":"IP 172.16.0.9 uploaded 'manifest_edit.doc' to an external server.","confidence":0.88,"raw_source_file":"synthetic_case_v4/raw/net1.csv"},
+  {"evidence_id":"EVID-E005","source_type":"chat_log","timestamp":"2026-06-02T08:50:00","entity_refs":["PERSON-Wei","PERSON-Tariq"],"content":"Wei messaged Tariq: 'meet me at the dock after the call'.","confidence":0.75,"raw_source_file":"synthetic_case_v4/raw/chat1.csv"}
+]
