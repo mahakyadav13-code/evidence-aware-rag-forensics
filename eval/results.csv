@@ -1,6 +1,9 @@
 case,system,evidence_covered,total_evidence,coverage_pct
 synthetic_case_v0,hybrid,5,5,100.0
 synthetic_case_v0,naive_baseline,3,5,60.0
-synthetic_case_v1,hybrid,0,4,0.0
-synthetic_case_v1,naive_baseline,0,4,0.0
 synthetic_case_v5,hybrid,4,4,100.0
+synthetic_case_v5,naive_baseline,3,4,75.0
+synthetic_case_v6,hybrid,4,4,100.0
+synthetic_case_v6,naive_baseline,3,4,75.0
+synthetic_case_v1,hybrid,4,4,100.0
+synthetic_case_v1,naive_baseline,3,4,75.0

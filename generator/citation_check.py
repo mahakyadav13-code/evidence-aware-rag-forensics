@@ -2,7 +2,7 @@ import sys, os, re, json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def extract_citations(report_text):
-    return set(re.findall(r'\[EVID-\w+\]', report_text))
+    return set(re.findall(r'\[EVID-[\w-]+\]', report_text))
 
 def get_valid_evidence_ids(evidence_file):
     with open(evidence_file) as f:
